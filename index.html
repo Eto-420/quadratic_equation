@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>2次方程式の問題生成</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-md space-y-6">
+    <h1 class="text-2xl font-bold text-center">2次方程式の問題生成</h1>
+
+    <!-- ボタン -->
+    <button onclick="generateProblem()" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+      問題を生成
+    </button>
+
+    <!-- 問題表示 -->
+    <div id="problem" class="text-lg font-semibold text-center"></div>
+
+    <!-- 解答ボタン -->
+    <div class="text-center">
+      <button onclick="showAnswer()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+        解答を見る
+      </button>
+    </div>
+
+    <!-- 解答表示 -->
+    <div id="answer" class="text-center text-blue-700 font-medium mt-2"></div>
+  </div>
+
+  <script>
+    let currentProblem = null;
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function isPerfectSquare(n) {
+      return Number.isInteger(Math.sqrt(n));
+    }
+
+    function generateProblem() {
+      // ランダムにa, b, cを生成（aは0でない）
+      let a, b, c, D;
+      for (let attempt = 0; attempt < 1000; attempt++) {
+        a = getRandomInt(-10, 10); // aの範囲は-10から10
+        if (a === 0) continue; // aが0でないことを確認
+        b = getRandomInt(-20, 20); // bの範囲は-20から20
+        c = getRandomInt(-20, 20); // cの範囲は-20から20
+
+        D = b * b - 4 * a * c; // 判別式
+        if (isPerfectSquare(Math.abs(D)) || Math.abs(D) < 11) {
+          currentProblem = { a, b, c, D };
+          document.getElementById("problem").textContent = `${a}x² + ${b}x + ${c} = 0`;
+          document.getElementById("answer").textContent = '';
+          return;
+        }
+      }
+
+      document.getElementById("problem").textContent = '条件に合う問題が見つかりませんでした。';
+      document.getElementById("answer").textContent = '';
+    }
+
+    // 分数表示を作成する関数
+    function toFraction(num, den = 1) {
+      if (num % den === 0) {
+        return `${num / den}`;
+      } else {
+        return `${num} / ${den}`;
+      }
+    }
+
+    function showAnswer() {
+      if (!currentProblem) return;
+      const { a, b, c, D } = currentProblem;
+
+      let ans;
+      const denominator = 2 * a;
+
+      if (D < 0) {
+        const absD = -D;
+        if (isPerfectSquare(absD)) {
+          const sqrtD = Math.sqrt(absD);
+          ans = `x = \\frac{${-b} \\pm ${sqrtD}i}{${denominator}}`;
+        } else {
+          ans = `x = \\dfrac{${-b} \\pm \\sqrt{${absD}}i}{${denominator}}`;
+        }
+      } else if (D === 0) {
+        // 判別式が0のとき
+        const root = toFraction(-b, denominator);
+        ans = `x = ${root}`;
+      } else if (isPerfectSquare(D)) {
+        const root1 = toFraction(-b + Math.sqrt(D), denominator);
+        const root2 = toFraction(-b - Math.sqrt(D), denominator);
+        ans = `x = ${root1} または x = ${root2}`;
+      } else {
+        const root1 = toFraction(-b + Math.sqrt(D), denominator);
+        const root2 = toFraction(-b - Math.sqrt(D), denominator);
+        ans = `x = \\dfrac{${-b} \\pm \\sqrt{${D}}}{${denominator}}`;
+      }
+
+      // 解答の表示をMathJaxで整形
+      document.getElementById("answer").innerHTML = `解答: $$${ans}$$`;
+      MathJax.typeset(); // MathJaxを更新して数式を表示
+    }
+  </script>
+</body>
+</html>
